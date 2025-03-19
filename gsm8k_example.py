@@ -1,9 +1,8 @@
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, hf_dataset
 from inspect_ai.scorer import match
-from inspect_ai.solver import (
-    generate, prompt_template, system_message
-)
+from inspect_ai.solver import generate, prompt_template, system_message
+
 
 def record_to_sample(record):
     DELIM = "####"
@@ -11,11 +10,8 @@ def record_to_sample(record):
     answer = record["answer"].split(DELIM)
     target = answer.pop().strip()
     reasoning = DELIM.join(answer)
-    return Sample(
-        input=input, 
-        target=target, 
-        metadata={"reasoning": reasoning.strip()}
-    )
+    return Sample(input=input, target=target, metadata={"reasoning": reasoning.strip()})
+
 
 def sample_to_fewshot(sample):
     return (
@@ -23,6 +19,7 @@ def sample_to_fewshot(sample):
         + f"{sample.metadata['reasoning']}\n\n"
         + f"ANSWER: {sample.target}"
     )
+
 
 # setup for problem + instructions for providing answer
 MATH_PROMPT_TEMPLATE = """
@@ -38,6 +35,7 @@ the problem, and you do not need to use a \\boxed command.
 
 Reasoning:
 """.strip()
+
 
 @task
 def gsm8k(fewshot=10, fewshot_seed=42):
@@ -67,6 +65,7 @@ def gsm8k(fewshot=10, fewshot_seed=42):
             data_dir="main",
             split="test",
             sample_fields=record_to_sample,
+            limit=100,
         ),
         solver=solver,
         scorer=match(numeric=True),
